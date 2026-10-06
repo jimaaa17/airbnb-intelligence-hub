@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  # Tier 2: FastAPI Semantic & ML Gateway
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    container_name: airbnb-intelligence-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - AIRBNB_ML_OFFLINE=1
+      - CANCELLATION_MODEL_PATH=ml/artifacts/cancellation_model.joblib
+      - PRICE_MODEL_PATH=ml/artifacts/price_regressor.joblib
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - airbnb-network
+
+  # Tier 3: Next.js OOP Frontend
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: airbnb-intelligence-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - airbnb-network
+
+networks:
+  airbnb-network:
+    driver: bridge
