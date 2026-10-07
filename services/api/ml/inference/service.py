@@ -52,11 +52,44 @@ class PricePredictionResponse(BaseModel):
     recommended_max_guardrail: float
 
 class ModelInferenceService:
-    """Manages loaded models and executes real-time inference."""
+    """Manages loaded models and executes real-time inference via MLflow Registry or local binaries."""
 
-    def __init__(self, cancellation_model_path: str, price_model_path: str):
-        self.cancellation_model = CancellationClassifier({}).load(cancellation_model_path)
-        self.price_model = PriceRegressor({}).load(price_model_path)
+    def __init__(
+        self,
+        cancellation_model_path: str = "models:/cancellation_classifier@champion",
+        price_model_path: str = "models:/price_regressor@champion"
+    ):
+        # 1. Load Cancellation Model
+        try:
+            if cancellation_model_path.startswith("models:/"):
+                import mlflow
+                from ml.tracking.tracker import get_default_tracking_uri
+                mlflow.set_tracking_uri(get_default_tracking_uri())
+                c_pipe = mlflow.sklearn.load_model(cancellation_model_path)
+                self.cancellation_model = CancellationClassifier({})
+                self.cancellation_model.pipeline = c_pipe
+                self.cancellation_model.is_fitted = True
+            else:
+                self.cancellation_model = CancellationClassifier({}).load(cancellation_model_path)
+        except Exception:
+            fallback = "ml/artifacts/cancellation_model.joblib"
+            self.cancellation_model = CancellationClassifier({}).load(fallback)
+
+        # 2. Load Price Regressor Model
+        try:
+            if price_model_path.startswith("models:/"):
+                import mlflow
+                from ml.tracking.tracker import get_default_tracking_uri
+                mlflow.set_tracking_uri(get_default_tracking_uri())
+                p_pipe = mlflow.sklearn.load_model(price_model_path)
+                self.price_model = PriceRegressor({})
+                self.price_model.pipeline = p_pipe
+                self.price_model.is_fitted = True
+            else:
+                self.price_model = PriceRegressor({}).load(price_model_path)
+        except Exception:
+            fallback = "ml/artifacts/price_regressor.joblib"
+            self.price_model = PriceRegressor({}).load(fallback)
 
     def predict_cancellation(self, req: CancellationPredictionRequest) -> CancellationPredictionResponse:
         row = {

@@ -4,6 +4,8 @@ import {
   PricePredictionResponse,
   CancellationPredictionRequest,
   CancellationPredictionResponse,
+  SmeImpactReportResponse,
+  ShapExplanationResponse,
 } from "../models/prediction.model";
 
 export class PredictionService extends ApiClient {
@@ -13,6 +15,14 @@ export class PredictionService extends ApiClient {
 
   public async predictCancellation(req: CancellationPredictionRequest): Promise<CancellationPredictionResponse> {
     return this.post<CancellationPredictionResponse, CancellationPredictionRequest>("/api/v1/predict/cancellation", req);
+  }
+
+  public async getSmeImpactReport(): Promise<SmeImpactReportResponse> {
+    return this.get<SmeImpactReportResponse>("/api/v1/sme/impact");
+  }
+
+  public async getPricingShapExplanations(): Promise<ShapExplanationResponse> {
+    return this.get<ShapExplanationResponse>("/api/v1/explain/pricing");
   }
 }
 
