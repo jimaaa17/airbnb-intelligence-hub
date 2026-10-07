@@ -74,3 +74,42 @@ class PriceResponse(BaseModel):
     recommended_max_guardrail: float
     currency: str = "USD"
     model_version: str = "GradientBoostingRegressor_v1"
+
+
+class SmeCancellationImpact(BaseModel):
+    total_bookings_evaluated: int
+    total_booking_volume_usd: float
+    revenue_at_risk_usd: float
+    revenue_protected_usd: float
+    protection_capture_rate: float
+    estimated_salvaged_revenue_usd: float
+    avg_lead_time_days_for_rebooking: float
+    false_alarm_rate: float
+
+
+class SmePricingImpact(BaseModel):
+    underpriced_listings_pct: float
+    overpriced_listings_pct: float
+    within_guardrails_pct: float
+    avg_nightly_dollar_error_usd: float
+    avg_underpriced_gap_usd: float
+    estimated_monthly_uplift_per_listing_usd: float
+
+
+class SmeImpactReportResponse(BaseModel):
+    cancellation_impact: SmeCancellationImpact
+    pricing_impact: SmePricingImpact
+    registry_champion_alias: str = "@champion"
+    mlflow_tracking_status: str = "active"
+
+
+class FeatureImportanceItem(BaseModel):
+    feature: str
+    mean_abs_shap: float
+    rank: int
+
+
+class ShapExplanationResponse(BaseModel):
+    model_name: str = "price_regressor"
+    top_global_drivers: List[FeatureImportanceItem]
+    underpriced_gap_drivers: List[str]

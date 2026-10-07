@@ -45,3 +45,42 @@ export interface CancellationPredictionResponse {
   threshold_applied: number;
   recommended_action: string;
 }
+
+export interface SmeCancellationImpact {
+  total_bookings_evaluated: number;
+  total_booking_volume_usd: number;
+  revenue_at_risk_usd: number;
+  revenue_protected_usd: number;
+  protection_capture_rate: number;
+  estimated_salvaged_revenue_usd: number;
+  avg_lead_time_days_for_rebooking: number;
+  false_alarm_rate: number;
+}
+
+export interface SmePricingImpact {
+  underpriced_listings_pct: number;
+  overpriced_listings_pct: number;
+  within_guardrails_pct: number;
+  avg_nightly_dollar_error_usd: number;
+  avg_underpriced_gap_usd: number;
+  estimated_monthly_uplift_per_listing_usd: number;
+}
+
+export interface SmeImpactReportResponse {
+  cancellation_impact: SmeCancellationImpact;
+  pricing_impact: SmePricingImpact;
+  registry_champion_alias: string;
+  mlflow_tracking_status: string;
+}
+
+export interface FeatureImportanceItem {
+  feature: string;
+  mean_abs_shap: number;
+  rank: number;
+}
+
+export interface ShapExplanationResponse {
+  model_name: string;
+  top_global_drivers: FeatureImportanceItem[];
+  underpriced_gap_drivers: string[];
+}

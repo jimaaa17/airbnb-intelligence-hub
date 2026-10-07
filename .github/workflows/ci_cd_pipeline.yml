@@ -27,6 +27,26 @@ jobs:
         run: |
           python -m py_compile services/api/app/main.py
           python -m py_compile services/api/app/schemas/contracts.py
+          python -m py_compile services/api/ml/features/transformers.py
+          python -m py_compile services/api/ml/features/definitions.py
+          python -m py_compile services/api/ml/evaluation/metrics.py
+          python -m py_compile services/api/ml/evaluation/shap_diagnostics.py
+          python -m py_compile services/api/ml/tracking/tracker.py
+
+      - name: Train & Register Models in MLflow Registry
+        run: |
+          cd services/api
+          PYTHONPATH=. python ml/train_all.py
+
+      - name: Run ML Unit, Registry & Regression Tests
+        run: |
+          cd services/api
+          PYTHONPATH=. pytest ml/tests/ -v
+
+      - name: Run MLOps & SME Quality Gate
+        run: |
+          cd services/api
+          PYTHONPATH=. python ml/evaluation/eval_gate.py
 
   # 2. Frontend Next.js Quality Gate
   test-frontend:

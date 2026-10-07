@@ -27,8 +27,14 @@ data/target/
 data/dbt_packages/
 data/logs/
 
-# Model Artifacts (train via CI or mount)
+# Model Artifacts, SQLite DBs & MLflow
 *.joblib
+mlruns/
+*.db
+services/api/mlruns/
+services/api/ml/artifacts/mlruns/
+services/api/ml/artifacts/*_metrics.json
+services/api/ml/artifacts/shap/
 
 # OS
 .DS_Store
